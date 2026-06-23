@@ -7,7 +7,9 @@
         <span>首页</span>
       </RouterLink>
       <Icon icon="mdi:chevron-right" />
-      <span class="text-gray-500">{{ categoryLabel }}</span>
+      <RouterLink :to="{ path: '/', query: { category } }" class="hover:text-indigo-600 transition-colors">
+        {{ categoryLabel }}
+      </RouterLink>
       <Icon icon="mdi:chevron-right" />
       <span class="text-gray-700 font-medium">{{ title }}</span>
     </nav>

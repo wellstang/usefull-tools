@@ -43,15 +43,23 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
-import { tools } from '@/data/tools.js'
+import { tools, categories } from '@/data/tools.js'
 import CategoryTabs from '@/components/common/CategoryTabs.vue'
 import ToolCard from '@/components/common/ToolCard.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
+const route = useRoute()
 const query = ref('')
-const activeCategory = ref('all')
+
+// 从 ?category=dev 初始化分类；URL 变化时同步更新
+const validIds = categories.map(c => c.id)
+const activeCategory = ref(validIds.includes(route.query.category) ? route.query.category : 'all')
+watch(() => route.query.category, (val) => {
+  activeCategory.value = validIds.includes(val) ? val : 'all'
+})
 
 const onlineTools = computed(() => tools.filter(t => t.status === 'online'))
 const onlineCount = computed(() => onlineTools.value.length)
