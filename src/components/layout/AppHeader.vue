@@ -6,19 +6,9 @@
         <span>唐唐工具箱</span>
       </RouterLink>
 
-      <a
-        href="https://github.com/wellstang/usefull-tools"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
-      >
-        <Icon icon="mdi:github" class="text-xl" />
-        <span class="hidden sm:inline">GitHub</span>
-      </a>
     </div>
   </header>
 </template>
 
 <script setup>
-import { Icon } from '@iconify/vue'
 </script>
