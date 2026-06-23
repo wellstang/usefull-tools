@@ -21,3 +21,23 @@
     -webkit-box-orient: vertical;
   }
 }
+
+/* 护眼模式 — 挂在 html 元素上，整页生效 */
+html.eye-mode {
+  filter: sepia(15%) brightness(97%);
+  background-color: #f5f0e5;
+}
+
+html.eye-mode body {
+  background-color: #f5f0e5;
+}
+
+html.eye-mode .bg-white {
+  background-color: #fdf9f0 !important;
+}
+
+html.eye-mode header,
+html.eye-mode footer {
+  background-color: #fdf9f0 !important;
+}
+

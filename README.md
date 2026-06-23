@@ -79,4 +79,4 @@ npm run dev
 
 ## License
 
-[MIT](LICENSE) © 2026 369491785@qq.com
+[MIT](LICENSE) © 2026 Wells Tang · 369491785@qq.com
