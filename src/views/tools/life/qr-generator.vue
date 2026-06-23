@@ -5,21 +5,21 @@
       <div class="space-y-4">
         <div>
           <label class="label">内容</label>
-          <textarea v-model="text" @input="generate" placeholder="输入文字或 URL..." class="textarea h-28 mt-1" />
+          <textarea v-model="text" placeholder="输入文字或 URL..." class="textarea h-28 mt-1" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="label">前景色</label>
             <div class="flex gap-2 mt-1">
-              <input type="color" v-model="fgColor" @input="generate" class="w-10 h-10 cursor-pointer rounded border border-gray-200" />
-              <input v-model="fgColor" @input="generate" class="input flex-1 font-mono" />
+              <input type="color" v-model="fgColor" class="w-10 h-10 cursor-pointer rounded border border-gray-200" />
+              <input v-model="fgColor" class="input flex-1 font-mono" />
             </div>
           </div>
           <div>
             <label class="label">背景色</label>
             <div class="flex gap-2 mt-1">
-              <input type="color" v-model="bgColor" @input="generate" class="w-10 h-10 cursor-pointer rounded border border-gray-200" />
-              <input v-model="bgColor" @input="generate" class="input flex-1 font-mono" />
+              <input type="color" v-model="bgColor" class="w-10 h-10 cursor-pointer rounded border border-gray-200" />
+              <input v-model="bgColor" class="input flex-1 font-mono" />
             </div>
           </div>
         </div>
@@ -27,7 +27,7 @@
           <label class="label">纠错级别</label>
           <div class="flex gap-2 mt-1">
             <button v-for="l in ['L','M','Q','H']" :key="l"
-              @click="level=l;generate()"
+              @click="level = l"
               :class="['px-3 py-1.5 text-sm rounded-lg border transition-colors', level===l ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300']">
               {{ l }}
             </button>
@@ -36,16 +36,19 @@
         </div>
         <div>
           <label class="label">尺寸：{{ size }}px</label>
-          <input type="range" v-model.number="size" @input="generate" min="128" max="512" step="32" class="w-full mt-1" />
+          <input type="range" v-model.number="size" min="128" max="512" step="32" class="w-full mt-1" />
         </div>
       </div>
 
       <!-- 预览区 -->
       <div class="flex flex-col items-center gap-4">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 min-h-[200px] flex items-center justify-center">
           <canvas ref="canvas" class="block" />
         </div>
-        <div v-if="text" class="flex gap-2">
+        <div v-if="genError" class="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-2 w-full text-center">
+          ❌ {{ genError }}
+        </div>
+        <div v-else-if="text" class="flex gap-2">
           <button @click="download" class="btn-primary flex items-center gap-2">
             <Icon icon="mdi:download" />下载 PNG
           </button>
@@ -57,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import QRCode from 'qrcode'
 import { Icon } from '@iconify/vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
@@ -68,17 +71,32 @@ const bgColor = ref('#ffffff')
 const level = ref('M')
 const size = ref(256)
 const canvas = ref(null)
+const genError = ref('')
+
+let debounceTimer = null
 
 async function generate() {
-  if (!text.value || !canvas.value) return
+  genError.value = ''
+  if (!canvas.value) return
+  if (!text.value) return
   try {
     await QRCode.toCanvas(canvas.value, text.value, {
       width: size.value,
       color: { dark: fgColor.value, light: bgColor.value },
       errorCorrectionLevel: level.value,
     })
-  } catch {}
+  } catch (e) {
+    genError.value = e.message
+  }
 }
+
+function debouncedGenerate() {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(generate, 300)
+}
+
+// 所有影响输出的参数统一 watch，防抖触发
+watch([text, fgColor, bgColor, level, size], debouncedGenerate)
 
 function download() {
   const link = document.createElement('a')
@@ -89,9 +107,3 @@ function download() {
 
 onMounted(generate)
 </script>
-<style scoped>
-.label { @apply text-sm font-medium text-gray-700; }
-.input { @apply border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400; }
-.textarea { @apply w-full rounded-xl border border-gray-200 p-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm; }
-.btn-primary { @apply px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors; }
-</style>

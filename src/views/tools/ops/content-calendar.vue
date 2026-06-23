@@ -55,6 +55,7 @@
 import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
+import { useStorage } from '@/composables/useStorage.js'
 
 const now = new Date()
 const year = ref(now.getFullYear())
@@ -65,10 +66,11 @@ const yearMonth = computed(() => `${year.value} 年 ${month.value + 1} 月`)
 function prevMonth() { if (month.value === 0) { month.value = 11; year.value-- } else month.value-- }
 function nextMonth() { if (month.value === 11) { month.value = 0; year.value++ } else month.value++ }
 
-const events = ref([
-  { id: 1, title: '产品更新公告', date: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, type: 'article' },
-])
-let nextId = 2
+const events = useStorage('tt-calendar-events', [])
+
+function getNextId() {
+  return events.value.reduce((max, e) => Math.max(max, e.id || 0), 0) + 1
+}
 
 const typeColors = { article: 'bg-blue-100 text-blue-700', video: 'bg-red-100 text-red-700', social: 'bg-green-100 text-green-700', email: 'bg-purple-100 text-purple-700' }
 
@@ -78,7 +80,7 @@ const selectedEvent = ref(null)
 
 function addEvent() {
   if (!newEv.value.title || !newEv.value.date) return
-  events.value.push({ ...newEv.value, id: nextId++ })
+  events.value.push({ ...newEv.value, id: getNextId() })
   newEv.value = { title: '', date: now.toISOString().slice(0,10), type: 'article' }
   showAdd.value = false
 }
@@ -103,7 +105,3 @@ const calDays = computed(() => {
   return days
 })
 </script>
-<style scoped>
-.input { @apply border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400; }
-.btn-primary { @apply px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors; }
-</style>

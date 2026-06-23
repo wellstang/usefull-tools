@@ -7,6 +7,7 @@
         <input v-model="newDimension" placeholder="添加维度..." class="input" @keyup.enter="addDimension" />
         <button @click="addDimension" class="btn-secondary">+ 维度</button>
         <button @click="exportCsv" class="btn-secondary flex items-center gap-1"><Icon icon="mdi:download" />导出 CSV</button>
+        <button @click="reset" class="text-xs text-gray-400 hover:text-red-400 transition-colors ml-auto self-center">重置</button>
       </div>
 
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -42,13 +43,18 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
+import { useStorage } from '@/composables/useStorage.js'
 
-const competitors = ref(['我们', '竞品A', '竞品B'])
-const dimensions = ref(['核心功能', '定价', '用户体验', '市场份额'])
-const data = ref(dimensions.value.map(() => Array(competitors.value.length).fill('')))
+const DEFAULT_COMPETITORS = ['我们', '竞品A', '竞品B']
+const DEFAULT_DIMENSIONS = ['核心功能', '定价', '用户体验', '市场份额']
+const DEFAULT_DATA = () => DEFAULT_DIMENSIONS.map(() => Array(DEFAULT_COMPETITORS.length).fill(''))
+
+const competitors = useStorage('tt-ct-competitors', DEFAULT_COMPETITORS)
+const dimensions = useStorage('tt-ct-dimensions', DEFAULT_DIMENSIONS)
+const data = useStorage('tt-ct-data', DEFAULT_DATA())
 
 const newCompetitor = ref('')
 const newDimension = ref('')
@@ -76,9 +82,10 @@ function exportCsv() {
   const a = document.createElement('a'); a.href = url; a.download = '竞品对比.csv'; a.click()
   URL.revokeObjectURL(url)
 }
+
+function reset() {
+  competitors.value = [...DEFAULT_COMPETITORS]
+  dimensions.value = [...DEFAULT_DIMENSIONS]
+  data.value = DEFAULT_DATA()
+}
 </script>
-<style scoped>
-.input { @apply border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400; }
-.btn-primary { @apply px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors; }
-.btn-secondary { @apply px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-colors; }
-</style>

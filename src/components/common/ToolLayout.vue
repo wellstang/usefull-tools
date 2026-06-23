@@ -7,8 +7,9 @@
         <span>首页</span>
       </RouterLink>
       <Icon icon="mdi:chevron-right" />
-      <RouterLink :to="{ path: '/', query: { category } }" class="hover:text-indigo-600 transition-colors">
-        {{ categoryLabel }}
+      <RouterLink :to="{ path: '/', query: { category } }" class="hover:text-indigo-600 transition-colors flex items-center gap-1">
+        <Icon v-if="categoryIcon" :icon="categoryIcon" class="text-base" />
+        <span>{{ categoryLabel }}</span>
       </RouterLink>
       <Icon icon="mdi:chevron-right" />
       <span class="text-gray-700 font-medium">{{ title }}</span>
@@ -49,6 +50,11 @@ const props = defineProps({
 const categoryLabel = computed(() => {
   const cat = categories.find(c => c.id === props.category)
   return cat ? cat.label : '工具'
+})
+
+const categoryIcon = computed(() => {
+  const cat = categories.find(c => c.id === props.category)
+  return cat ? cat.icon : ''
 })
 
 const hasError = ref(false)

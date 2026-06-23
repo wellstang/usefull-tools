@@ -93,8 +93,5 @@ function setNow() {
 }
 </script>
 <style scoped>
-.card { @apply bg-white rounded-xl border border-gray-200 p-6; }
 .section-title { @apply text-base font-semibold text-gray-800 mb-4; }
-.input { @apply border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent; }
-.btn-primary { @apply px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors; }
 </style>

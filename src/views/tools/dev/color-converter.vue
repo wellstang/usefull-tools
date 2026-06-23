@@ -95,7 +95,5 @@ function onHsb() {
 }
 </script>
 <style scoped>
-.card { @apply bg-white rounded-xl border border-gray-200 p-4; }
 .format-label { @apply text-sm font-semibold text-gray-700; }
-.input { @apply border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400; }
 </style>

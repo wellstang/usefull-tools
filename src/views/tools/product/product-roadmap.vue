@@ -40,15 +40,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
+import { useStorage } from '@/composables/useStorage.js'
 
-const title = ref('唐唐工具箱 路线图')
-const phases = ref([
-  { name: 'Q3 2026 — Phase 1', status: 'active', features: ['研发工具（15个）', '生活工具（6个）', '首页搜索与分类'] },
+const title = useStorage('tt-roadmap-title', '')
+const phases = useStorage('tt-roadmap-phases', [
+  { name: 'Q3 2026 — Phase 1', status: 'active', features: ['研发工具（16个）', '生活工具（10个）', '首页搜索与分类'] },
   { name: 'Q4 2026 — Phase 2', status: 'planned', features: ['产品工具（8个）', '运营工具（7个）', '移动端优化'] },
-  { name: '2027 Q1 — Phase 3', status: 'planned', features: ['设计工具（8个）', '生活工具补全', 'GitHub Actions 自动部署'] },
+  { name: '2027 Q1 — Phase 3', status: 'planned', features: ['设计工具（8个）', '质量优化', 'GitHub Actions 自动部署'] },
 ])
 
 function addPhase() {
@@ -67,8 +67,3 @@ async function exportImg() {
   link.download = 'roadmap.png'; link.href = canvas.toDataURL('image/png'); link.click()
 }
 </script>
-<style scoped>
-.input { @apply border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400; }
-.btn-primary { @apply px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors; }
-.btn-secondary { @apply px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-colors; }
-</style>

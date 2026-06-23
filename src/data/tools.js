@@ -155,6 +155,16 @@ export const tools = [
     tags: ['HTTP', '状态码', '404', '200', '开发'],
     status: 'online',
   },
+  {
+    id: 'sql-formatter',
+    name: 'SQL 格式化',
+    description: '美化、压缩 SQL 语句，支持 MySQL / PostgreSQL / BigQuery / SQLite',
+    category: 'dev',
+    icon: 'mdi:database-outline',
+    route: '/tools/dev/sql-formatter',
+    tags: ['SQL', '格式化', '数据库', 'MySQL', 'PostgreSQL', '开发'],
+    status: 'online',
+  },
 
   // ── 产品（8）──────────────────────────────────────────────
   {
@@ -170,7 +180,7 @@ export const tools = [
   {
     id: 'priority-matrix',
     name: '需求优先级矩阵',
-    description: 'RICE / ICE 评分框架，可视化需求排序',
+    description: 'RICE 和 ICE 双评分框架，可视化需求排序',
     category: 'product',
     icon: 'mdi:sort-variant',
     route: '/tools/product/priority-matrix',

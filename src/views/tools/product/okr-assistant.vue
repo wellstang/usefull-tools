@@ -23,6 +23,10 @@
 
       <button @click="krs.push({ text:'', progress:0 })" class="btn-secondary w-full">+ 添加关键结果</button>
 
+      <div class="flex justify-end">
+        <button @click="reset" class="text-xs text-gray-400 hover:text-red-400 transition-colors">重置数据</button>
+      </div>
+
       <div v-if="objective && krs.length" class="card">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-gray-800">整体完成度</h3>
@@ -44,24 +48,23 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
+import { useStorage } from '@/composables/useStorage.js'
 
-const objective = ref('提升用户留存率，打造用户价值感知')
-const krs = ref([
-  { text: '7 日留存率从 30% 提升至 45%', progress: 40 },
-  { text: '用户 NPS 从 20 提升至 50', progress: 25 },
-  { text: '月活用户增长 30%', progress: 60 },
-])
+const DEFAULT_OBJECTIVE = ''
+const DEFAULT_KRS = []
+
+const objective = useStorage('tt-okr-objective', DEFAULT_OBJECTIVE)
+const krs = useStorage('tt-okr-krs', DEFAULT_KRS)
 
 const overallProgress = computed(() => {
   if (!krs.value.length) return 0
   return Math.round(krs.value.reduce((s, kr) => s + kr.progress, 0) / krs.value.length)
 })
+
+function reset() {
+  objective.value = DEFAULT_OBJECTIVE
+  krs.value = DEFAULT_KRS
+}
 </script>
-<style scoped>
-.card { @apply bg-white rounded-xl border border-gray-200 p-5; }
-.label { @apply text-sm font-medium text-gray-700; }
-.input { @apply border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400; }
-.btn-secondary { @apply px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-colors; }
-</style>

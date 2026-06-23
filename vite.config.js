@@ -13,6 +13,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes('sql-formatter')) return 'sql-formatter'
           if (id.includes('node_modules')) return 'vendor'
           if (id.includes('/views/tools/dev/')) return 'tools-dev'
           if (id.includes('/views/tools/product/')) return 'tools-product'
