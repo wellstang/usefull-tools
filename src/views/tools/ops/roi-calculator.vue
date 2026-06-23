@@ -29,10 +29,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
+import { useStorage } from '@/composables/useStorage.js'
 
-const costs = ref({ ad: 5000, labor: 2000, material: 1000, other: 500 })
-const revenue = ref(30000)
-const conversions = ref(150)
+const costs = useStorage('tt-roi-costs', { ad: 5000, labor: 2000, material: 1000, other: 500 })
+const revenue = useStorage('tt-roi-revenue', 30000)
+const conversions = useStorage('tt-roi-conversions', 150)
 
 const totalCost = computed(() => Object.values(costs.value).reduce((s, v) => s + (v || 0), 0))
 const profit = computed(() => revenue.value - totalCost.value)

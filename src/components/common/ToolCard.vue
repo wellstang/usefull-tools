@@ -5,7 +5,7 @@
   >
     <div class="flex items-start justify-between">
       <div class="w-12 h-12 rounded-xl bg-indigo-50 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
-        <Icon :icon="tool.icon" class="text-2xl text-indigo-600" />
+        <Icon :icon="tool.icon" class="text-3xl text-indigo-600" />
       </div>
       <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
         {{ categoryLabel }}

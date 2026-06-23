@@ -1,6 +1,6 @@
 <template>
   <ToolLayout title="AB 实验样本量" description="根据基线转化率和 MDE 计算所需实验样本量" category="product">
-    <div class="max-w-lg space-y-5">
+    <div class="max-w-2xl space-y-5">
       <div class="card space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -54,6 +54,38 @@
           实验组转化率目标：{{ (baseline * (1 + mde / 100)).toFixed(2) }}%（相对提升 {{ mde }}%）
         </div>
       </div>
+
+      <!-- MDE 敏感度分析 -->
+      <div v-if="baseline" class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-gray-800">MDE 敏感度分析</h3>
+          <span class="text-xs text-gray-400">基线 {{ baseline }}% · α={{ alpha }} · 功效={{ power }}</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="text-left text-gray-500 font-medium pb-2 pr-4">MDE</th>
+                <th class="text-right text-gray-500 font-medium pb-2 pr-4">每组样本</th>
+                <th class="text-right text-gray-500 font-medium pb-2 pr-4">总样本</th>
+                <th v-if="dailyTraffic" class="text-right text-gray-500 font-medium pb-2">实验天数</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in sensitivityRows" :key="row.mde"
+                :class="['border-b border-gray-50 last:border-0 transition-colors', row.mde === mde ? 'bg-indigo-50' : 'hover:bg-gray-50']">
+                <td class="py-2 pr-4">
+                  <span :class="['font-medium', row.mde === mde ? 'text-indigo-600' : 'text-gray-700']">{{ row.mde }}%</span>
+                </td>
+                <td class="py-2 pr-4 text-right font-mono text-gray-700">{{ row.perGroup.toLocaleString() }}</td>
+                <td class="py-2 pr-4 text-right font-mono text-gray-700">{{ row.total.toLocaleString() }}</td>
+                <td v-if="dailyTraffic" class="py-2 text-right font-mono text-gray-700">{{ row.days ? row.days + ' 天' : '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-gray-400 mt-3">当前选择的 MDE 已高亮显示。MDE 越小，所需样本量越大。</p>
+      </div>
     </div>
   </ToolLayout>
 </template>
@@ -72,17 +104,36 @@ const dailyTraffic = ref(null)
 const zAlpha = { 0.05: 1.96, 0.01: 2.576, 0.1: 1.645 }
 const zBeta = { 0.8: 0.842, 0.9: 1.282, 0.95: 1.645 }
 
-const result = computed(() => {
-  if (!baseline.value || !mde.value) return null
-  const p1 = baseline.value / 100
-  const p2 = p1 * (1 + mde.value / 100)
+function calcN(baselinePct, mdePct) {
+  const p1 = baselinePct / 100
+  const p2 = p1 * (1 + mdePct / 100)
+  if (p2 <= 0 || p2 >= 1) return null
   const za = zAlpha[alpha.value] || 1.96
   const zb = zBeta[power.value] || 0.842
-  const n = Math.ceil(
+  return Math.ceil(
     (za + zb) ** 2 * (p1 * (1 - p1) + p2 * (1 - p2)) / (p1 - p2) ** 2
   )
+}
+
+const result = computed(() => {
+  if (!baseline.value || !mde.value) return null
+  const n = calcN(baseline.value, mde.value)
+  if (!n) return null
   const days = dailyTraffic.value ? Math.ceil((n * 2) / dailyTraffic.value) : null
   return { perGroup: n, total: n * 2, days }
+})
+
+const MDE_STEPS = [5, 10, 15, 20, 25, 30, 40, 50]
+
+const sensitivityRows = computed(() => {
+  if (!baseline.value) return []
+  const steps = new Set([...MDE_STEPS, mde.value])
+  return [...steps].sort((a, b) => a - b).map(m => {
+    const n = calcN(baseline.value, m)
+    if (!n) return { mde: m, perGroup: 0, total: 0, days: null }
+    const days = dailyTraffic.value ? Math.ceil((n * 2) / dailyTraffic.value) : null
+    return { mde: m, perGroup: n, total: n * 2, days }
+  })
 })
 </script>
 <style scoped>
