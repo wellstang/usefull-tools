@@ -51,6 +51,12 @@
             <span class="text-sm text-gray-400">分钟</span>
           </div>
         </div>
+        <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+          <span class="text-sm text-gray-600">桌面通知</span>
+          <button @click="requestNotify" :class="['text-xs px-3 py-1 rounded-lg transition-colors', notifyStatus === 'granted' ? 'bg-green-100 text-green-600' : notifyStatus === 'denied' ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600']">
+            {{ notifyStatus === 'granted' ? '✅ 已开启' : notifyStatus === 'denied' ? '🚫 已拒绝' : '点击开启' }}
+          </button>
+        </div>
       </div>
     </div>
   </ToolLayout>
@@ -65,6 +71,20 @@ const focusMins = ref(25)
 const breakMins = ref(5)
 const isFocus = ref(true)
 const pomodoroCount = ref(0)
+const notifyStatus = ref(typeof Notification !== 'undefined' ? Notification.permission : 'denied')
+
+async function requestNotify() {
+  if (typeof Notification === 'undefined') return
+  if (Notification.permission === 'granted') return
+  const result = await Notification.requestPermission()
+  notifyStatus.value = result
+}
+
+function sendNotification(title, body) {
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '/favicon.ico', silent: false })
+  }
+}
 
 const totalSecs = computed(() => (isFocus.value ? focusMins.value : breakMins.value) * 60)
 const remaining = ref(totalSecs.value)
@@ -93,7 +113,12 @@ function toggle() {
 function onPhaseEnd() {
   clearInterval(interval); isRunning.value = false
   beep()
-  if (isFocus.value) pomodoroCount.value++
+  if (isFocus.value) {
+    pomodoroCount.value++
+    sendNotification('🍅 专注结束！', `第 ${pomodoroCount.value} 个番茄完成，休息 ${breakMins.value} 分钟吧`)
+  } else {
+    sendNotification('⏰ 休息结束！', '准备好了吗？继续下一个专注时段')
+  }
   isFocus.value = !isFocus.value
   remaining.value = totalSecs.value
 }

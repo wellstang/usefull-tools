@@ -10,6 +10,30 @@
         </div>
       </div>
 
+      <!-- 词频分析 -->
+      <div v-if="text.trim()" class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-gray-800">词频分析 Top 20</h3>
+          <div class="flex gap-2">
+            <button @click="freqMode='zh'" :class="['px-3 py-1 text-xs rounded-lg transition-colors', freqMode==='zh' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">中文字</button>
+            <button @click="freqMode='en'" :class="['px-3 py-1 text-xs rounded-lg transition-colors', freqMode==='en' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">英文词</button>
+          </div>
+        </div>
+        <div v-if="topFreq.length === 0" class="text-gray-400 text-sm text-center py-4">
+          {{ freqMode === 'zh' ? '没有检测到中文字符' : '没有检测到英文单词' }}
+        </div>
+        <div v-else class="space-y-2">
+          <div v-for="item in topFreq" :key="item.word" class="flex items-center gap-3">
+            <span class="text-sm font-mono text-gray-700 w-20 shrink-0 truncate">{{ item.word }}</span>
+            <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+              <div class="h-full bg-indigo-400 rounded-full transition-all duration-300"
+                :style="{ width: (item.count / topFreq[0].count * 100) + '%' }" />
+            </div>
+            <span class="text-xs font-mono text-gray-500 w-8 text-right">{{ item.count }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- 平台限制 -->
       <div class="card">
         <h3 class="font-semibold text-gray-800 mb-4">平台字数限制对比</h3>
@@ -33,9 +57,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
-import { countChars, countChinese, countWords } from '@/utils/textStats.js'
+import { countChars, countWords } from '@/utils/textStats.js'
 
 const text = ref('')
+const freqMode = ref('zh')
 const charCount = computed(() => text.value.length)
 
 const stats = computed(() => {
@@ -47,6 +72,24 @@ const stats = computed(() => {
     { label: '英文单词', value: en },
     { label: '不含空格', value: noSpace },
   ]
+})
+
+const topFreq = computed(() => {
+  if (!text.value.trim()) return []
+  const map = new Map()
+  if (freqMode.value === 'zh') {
+    // 统计中文字符频率
+    const zhChars = text.value.match(/[\u4e00-\u9fa5]/g) || []
+    zhChars.forEach(c => map.set(c, (map.get(c) || 0) + 1))
+  } else {
+    // 统计英文单词频率（忽略大小写）
+    const words = text.value.toLowerCase().match(/[a-z]{2,}/g) || []
+    words.forEach(w => map.set(w, (map.get(w) || 0) + 1))
+  }
+  return Array.from(map.entries())
+    .map(([word, count]) => ({ word, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 20)
 })
 
 const platforms = [

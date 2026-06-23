@@ -16,6 +16,7 @@
             <div class="h-full rounded-full transition-all duration-300" :style="{ width: strength.pct + '%', backgroundColor: strength.color }" />
           </div>
           <span class="text-sm font-medium" :style="{ color: strength.color }">{{ strength.label }}</span>
+          <span class="text-xs text-gray-400 font-mono">{{ strength.entropy }} bits</span>
         </div>
       </div>
 
@@ -106,18 +107,29 @@ function generateBatch() {
 
 const strength = computed(() => {
   const p = password.value
-  let score = 0
-  if (p.length >= 8) score++; if (p.length >= 12) score++; if (p.length >= 16) score++
-  if (/[A-Z]/.test(p)) score++; if (/[a-z]/.test(p)) score++
-  if (/[0-9]/.test(p)) score++; if (/[^A-Za-z0-9]/.test(p)) score++
+  if (!p) return { label: '—', color: '#d1d5db', pct: 0, entropy: 0 }
+
+  // 计算字符集大小
+  let charsetSize = 0
+  if (/[a-z]/.test(p)) charsetSize += 26
+  if (/[A-Z]/.test(p)) charsetSize += 26
+  if (/[0-9]/.test(p)) charsetSize += 10
+  if (/[^A-Za-z0-9]/.test(p)) charsetSize += 32
+  charsetSize = Math.max(charsetSize, 26)
+
+  // 熵值 = 长度 × log2(字符集大小)
+  const entropy = Math.floor(p.length * Math.log2(charsetSize))
+
+  // 按熵值分级（业界常见标准）
   const levels = [
-    { label: '极弱', color: '#ef4444', pct: 15 },
-    { label: '弱', color: '#f97316', pct: 30 },
-    { label: '一般', color: '#eab308', pct: 50 },
-    { label: '强', color: '#22c55e', pct: 75 },
-    { label: '极强', color: '#10b981', pct: 100 },
+    { label: '极弱', color: '#ef4444', pct: 10 },   // <28 bits
+    { label: '弱', color: '#f97316', pct: 28 },      // 28-35 bits
+    { label: '一般', color: '#eab308', pct: 50 },    // 36-59 bits
+    { label: '强', color: '#22c55e', pct: 75 },      // 60-127 bits
+    { label: '极强', color: '#10b981', pct: 100 },   // ≥128 bits
   ]
-  return levels[Math.min(Math.floor(score / 1.5), 4)]
+  const idx = entropy < 28 ? 0 : entropy < 36 ? 1 : entropy < 60 ? 2 : entropy < 128 ? 3 : 4
+  return { ...levels[idx], entropy }
 })
 
 watch([length, options, excludeAmbiguous], generate, { deep: true })
