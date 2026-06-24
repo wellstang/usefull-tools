@@ -402,7 +402,17 @@ export const tools = [
     status: 'online',
   },
 
-  // ── 效率（9）──────────────────────────────────────────────
+  // ── 效率（10）──────────────────────────────────────────────
+  {
+    id: 'pdf-to-image',
+    name: 'PDF 转图片',
+    description: '将 PDF 每页转为 PNG/JPG 图片，支持调节分辨率，不上传服务器',
+    category: 'efficiency',
+    icon: 'mdi:file-pdf-box',
+    route: '/tools/efficiency/pdf-to-image',
+    tags: ['PDF', '图片', 'PNG', 'JPG', '转换', '效率'],
+    status: 'online',
+  },
   {
     id: 'qr-generator',
     name: '二维码生成器',
