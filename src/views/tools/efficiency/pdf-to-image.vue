@@ -98,7 +98,8 @@
         <div
           v-for="(page, i) in pages"
           :key="i"
-          class="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+          class="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-zoom-in"
+          @click="openPreview(i)"
         >
           <img :src="page.dataUrl" :alt="`第 ${i + 1} 页`" class="w-full object-contain" />
 
@@ -106,7 +107,7 @@
           <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
             <span class="text-white text-xs font-medium">第 {{ i + 1 }} 页</span>
             <button
-              @click="downloadPage(page, i + 1)"
+              @click.stop="downloadPage(page, i + 1)"
               class="flex items-center gap-1 text-xs text-white bg-white/20 hover:bg-white/40 backdrop-blur-sm px-2 py-1 rounded-lg transition-colors"
             >
               <Icon icon="mdi:download" />下载
@@ -121,11 +122,67 @@
       </div>
     </template>
 
+    <!-- 灯箱预览 -->
+    <Teleport to="body">
+      <div
+        v-if="previewIndex !== null"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
+        @click.self="closePreview"
+        @keydown.esc.prevent="closePreview"
+      >
+        <!-- 关闭 -->
+        <button
+          @click="closePreview"
+          class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
+        >
+          <Icon icon="mdi:close" class="text-2xl" />
+        </button>
+
+        <!-- 页码指示 -->
+        <div class="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
+          {{ previewIndex + 1 }} / {{ pages.length }}
+        </div>
+
+        <!-- 左箭头 -->
+        <button
+          v-if="previewIndex > 0"
+          @click="previewIndex--"
+          class="absolute left-4 text-white/70 hover:text-white transition-colors p-3 rounded-full hover:bg-white/10"
+        >
+          <Icon icon="mdi:chevron-left" class="text-3xl" />
+        </button>
+
+        <!-- 图片 -->
+        <img
+          :src="pages[previewIndex].dataUrl"
+          :alt="`第 ${previewIndex + 1} 页`"
+          class="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+        />
+
+        <!-- 右箭头 -->
+        <button
+          v-if="previewIndex < pages.length - 1"
+          @click="previewIndex++"
+          class="absolute right-4 text-white/70 hover:text-white transition-colors p-3 rounded-full hover:bg-white/10"
+        >
+          <Icon icon="mdi:chevron-right" class="text-3xl" />
+        </button>
+
+        <!-- 下载当前页 -->
+        <button
+          @click="downloadPage(pages[previewIndex], previewIndex + 1)"
+          class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-white bg-white/15 hover:bg-white/25 backdrop-blur-sm px-4 py-2 rounded-xl transition-colors"
+        >
+          <Icon icon="mdi:download" />下载此页
+        </button>
+      </div>
+    </Teleport>
+
   </ToolLayout>
 </template>
 
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import ToolLayout from '@/components/common/ToolLayout.vue'
 
@@ -143,6 +200,7 @@ const renderProgress = ref(0)
 const downloading = ref(false)
 const format = ref('png')
 const scale = ref(2)            // 默认高清
+const previewIndex = ref(null)  // 当前灯箱预览的页面索引
 
 let pdfDoc = null
 
@@ -241,6 +299,23 @@ async function downloadAll() {
   }
 }
 
+function openPreview(index) {
+  previewIndex.value = index
+  document.body.style.overflow = 'hidden'
+}
+
+function closePreview() {
+  previewIndex.value = null
+  document.body.style.overflow = ''
+}
+
+function onKeydown(e) {
+  if (previewIndex.value === null) return
+  if (e.key === 'Escape') closePreview()
+  if (e.key === 'ArrowLeft' && previewIndex.value > 0) previewIndex.value--
+  if (e.key === 'ArrowRight' && previewIndex.value < pages.value.length - 1) previewIndex.value++
+}
+
 function reset() {
   pdfFile.value = null
   pdfDoc = null
@@ -252,7 +327,13 @@ function reset() {
   if (fileInput.value) fileInput.value.value = ''
 }
 
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+})
+
 onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+  document.body.style.overflow = ''
   pdfDoc?.destroy?.()
 })
 </script>
