@@ -7,7 +7,7 @@
         <span>首页</span>
       </RouterLink>
       <Icon icon="mdi:chevron-right" />
-      <RouterLink :to="{ path: '/', query: { category } }" class="hover:text-indigo-600 transition-colors flex items-center gap-1">
+      <RouterLink :to="{ path: '/', query: { category: categoryId } }" class="hover:text-indigo-600 transition-colors flex items-center gap-1">
         <Icon v-if="categoryIcon" :icon="categoryIcon" class="text-base" />
         <span>{{ categoryLabel }}</span>
       </RouterLink>
@@ -33,13 +33,14 @@
 
 <script setup>
 import { ref, computed, onErrorCaptured } from 'vue'
+import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { categories } from '@/data/tools.js'
 
 /**
  * @prop {string} title       - 工具名称
  * @prop {string} description - 工具描述
- * @prop {string} [category]  - 分类 id（用于面包屑）
+ * @prop {string} [category]  - 分类 id（可选，默认从路由路径自动推断）
  */
 const props = defineProps({
   title: { type: String, required: true },
@@ -47,13 +48,22 @@ const props = defineProps({
   category: { type: String, default: '' },
 })
 
+const route = useRoute()
+
+// 从路由路径自动推断分类，例如 /tools/bizops/utm-generator → bizops
+const categoryId = computed(() => {
+  if (props.category) return props.category
+  const segments = route.path.split('/')
+  return segments[2] || ''
+})
+
 const categoryLabel = computed(() => {
-  const cat = categories.find(c => c.id === props.category)
+  const cat = categories.find(c => c.id === categoryId.value)
   return cat ? cat.label : '工具'
 })
 
 const categoryIcon = computed(() => {
-  const cat = categories.find(c => c.id === props.category)
+  const cat = categories.find(c => c.id === categoryId.value)
   return cat ? cat.icon : ''
 })
 
