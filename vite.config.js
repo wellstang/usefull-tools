@@ -14,12 +14,13 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('sql-formatter')) return 'sql-formatter'
+          if (id.includes('pdfjs-dist')) return 'pdfjs'
+          if (id.includes('jszip')) return 'jszip'
           if (id.includes('node_modules')) return 'vendor'
           if (id.includes('/views/tools/dev/')) return 'tools-dev'
-          if (id.includes('/views/tools/product/')) return 'tools-product'
-          if (id.includes('/views/tools/ops/')) return 'tools-ops'
+          if (id.includes('/views/tools/bizops/')) return 'tools-bizops'
           if (id.includes('/views/tools/design/')) return 'tools-design'
-          if (id.includes('/views/tools/life/')) return 'tools-life'
+          if (id.includes('/views/tools/efficiency/')) return 'tools-efficiency'
         }
       }
     }
